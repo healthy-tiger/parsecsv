@@ -12,6 +12,14 @@
     <RepositoryUrl>https://github.com/healthy-tiger/parsecsv</RepositoryUrl>
     <PackageTags>csv;parse;</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
