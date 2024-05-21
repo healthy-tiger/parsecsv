@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>0.0.1</Version>
+    <RootNamespace>HealthyTiger.CSVParser</RootNamespace>
+    <AssemblyName>HealthyTiger.CSVParser</AssemblyName>
+    <Title>A simple library for parsing CSV files</Title>
+    <Authors>ikura-don</Authors>
+    <Description>A simple library for parsing CSV files</Description>
+    <PackageProjectUrl>https://github.com/healthy-tiger/parsecsv</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/healthy-tiger/parsecsv</RepositoryUrl>
+    <PackageTags>csv;parse;</PackageTags>
+  </PropertyGroup>
+
+</Project>

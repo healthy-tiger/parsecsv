@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParseCSV", "ParseCSV\ParseCSV.csproj", "{219CF595-5BE3-4B55-9CE4-28D3B3D842C0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParseCSVTest", "ParseCSVTest\ParseCSVTest.csproj", "{9CCF094A-50C0-4A62-800D-BE5EA4C14F44}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{219CF595-5BE3-4B55-9CE4-28D3B3D842C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{219CF595-5BE3-4B55-9CE4-28D3B3D842C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{219CF595-5BE3-4B55-9CE4-28D3B3D842C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{219CF595-5BE3-4B55-9CE4-28D3B3D842C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CCF094A-50C0-4A62-800D-BE5EA4C14F44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CCF094A-50C0-4A62-800D-BE5EA4C14F44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CCF094A-50C0-4A62-800D-BE5EA4C14F44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CCF094A-50C0-4A62-800D-BE5EA4C14F44}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BF57CECA-322D-4C52-A0F8-3151BC783F5E}
+	EndGlobalSection
+EndGlobal
