@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParseCSV", "ParseCSV\ParseCSV.csproj", "{219CF595-5BE3-4B55-9CE4-28D3B3D842C0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParseCSVTest", "ParseCSVTest\ParseCSVTest.csproj", "{9CCF094A-50C0-4A62-800D-BE5EA4C14F44}"
+	ProjectSection(ProjectDependencies) = postProject
+		{219CF595-5BE3-4B55-9CE4-28D3B3D842C0} = {219CF595-5BE3-4B55-9CE4-28D3B3D842C0}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
