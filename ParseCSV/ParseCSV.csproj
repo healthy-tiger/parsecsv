@@ -11,6 +11,7 @@
     <PackageProjectUrl>https://github.com/healthy-tiger/parsecsv</PackageProjectUrl>
     <RepositoryUrl>https://github.com/healthy-tiger/parsecsv</RepositoryUrl>
     <PackageTags>csv;parse;</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>
