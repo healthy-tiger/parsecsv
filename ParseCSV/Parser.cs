@@ -8,7 +8,7 @@ namespace HealthyTiger.CSVParser
 {
     public class Parser
     {
-        public static async Task<List<string>[]> ParseStreamAsync(Stream stream, char sep, CancellationToken token)
+        public static async Task<List<List<string>>> ParseStreamAsync(Stream stream, char sep, CancellationToken token)
         {
             using (StreamReader sr = new StreamReader(stream))
             {
@@ -86,7 +86,7 @@ namespace HealthyTiger.CSVParser
                         items = new List<string>();
                     }
                 }
-                return lines.ToArray();
+                return lines;
             }
         }
     }

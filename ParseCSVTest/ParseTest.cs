@@ -36,7 +36,7 @@ namespace ParseCSVTest
                 string s = src[i];
                 string e = expected[i];
                 MemoryStream ms = new(Encoding.UTF8.GetBytes(s));
-                List<string>[] ans = await Parser.ParseStreamAsync(ms, ',', CancellationToken.None);
+                List<List<string>> ans = await Parser.ParseStreamAsync(ms, ',', CancellationToken.None);
                 string a = string.Join("\n", ans.Select(x => string.Join(",", x)));
                 Assert.AreEqual(e, a, false);
             }
@@ -67,7 +67,7 @@ namespace ParseCSVTest
                 string s = src[i];
                 string e = expected[i];
                 MemoryStream ms = new(Encoding.UTF8.GetBytes(s));
-                List<string>[] ans = await Parser.ParseStreamAsync(ms, ',', CancellationToken.None);
+                List<List<string>> ans = await Parser.ParseStreamAsync(ms, ',', CancellationToken.None);
                 string a = string.Join("\n", ans.Select(x => string.Join(",", x)));
                 Assert.AreEqual(e, a, false);
             }
