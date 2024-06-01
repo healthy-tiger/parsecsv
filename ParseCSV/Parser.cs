@@ -1,14 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace HealthyTiger.CSVParser
 {
     public class Parser
     {
-        public static async Task<List<List<string>>> ParseStreamAsync(Stream stream, char sep, CancellationToken token)
+        private static async IAsyncEnumerable<string> LinesFromStreamAsync(Stream stream, [EnumeratorCancellation] CancellationToken token = default)
+        {
+            using (StreamReader sr = new StreamReader(stream))
+            {
+                while(!token.IsCancellationRequested)
+                {
+                    string line = await sr.ReadLineAsync();
+                    if (line == null)
+                    {
+                        break;
+                    }
+                    yield return line;
+                }
+                if(token.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(token);
+                }
+            }
+        }
+
+        public static async Task<List<List<string>>> ParseStreamAsync(Stream stream, char sep, CancellationToken token = default)
         {
             using (StreamReader sr = new StreamReader(stream))
             {
@@ -18,14 +39,8 @@ namespace HealthyTiger.CSVParser
                 char[] sepchars = new char[] { sep };
                 string sepstr = new string(sepchars);
 
-                string line = null;
-                while (!token.IsCancellationRequested)
+                await foreach(string line in LinesFromStreamAsync(stream, token))
                 {
-                    line = await sr.ReadLineAsync();
-                    if (line == null)
-                    {
-                        break;
-                    }
                     string[] cols = line.Split(sepchars, StringSplitOptions.None);
                     bool isLeftMostColumn = true;
                     foreach (string col in cols)
@@ -85,10 +100,6 @@ namespace HealthyTiger.CSVParser
                         lines.Add(items);
                         items = new List<string>();
                     }
-                }
-                if(token.IsCancellationRequested)
-                {
-                    throw new OperationCanceledException(token);
                 }
                 return lines;
             }
