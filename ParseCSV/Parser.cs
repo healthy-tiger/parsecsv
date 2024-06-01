@@ -86,6 +86,10 @@ namespace HealthyTiger.CSVParser
                         items = new List<string>();
                     }
                 }
+                if(token.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(token);
+                }
                 return lines;
             }
         }
