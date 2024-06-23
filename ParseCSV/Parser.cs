@@ -11,6 +11,10 @@ namespace HealthyTiger.CSVParser
     {
         private static IEnumerable<string> LinesFromString(string src)
         {
+            if (src.Length == 0)
+            {
+                yield break;
+            }
             foreach (string line in src.Split('\n'))
             {
                 yield return line.TrimEnd('\r');
@@ -28,6 +32,10 @@ namespace HealthyTiger.CSVParser
             foreach (string s in srclines)
             {
                 ParseLine(s, sepchars, sepstr, ref inQuote, items, lines);
+            }
+            if (inQuote)
+            {
+                throw new FormatException("There is no closing quotation mark.");
             }
             return lines;
         }
@@ -96,10 +104,14 @@ namespace HealthyTiger.CSVParser
                     {
                         if (items.Count == 0)
                         {
-                            throw new FormatException("unmatched double quotes");
+                            throw new FormatException("Unmatched double quotes");
                         }
                         tmp += t.Substring(0, t.Length - 1);
                         inQuote = false;
+                    }
+                    else if(t.Contains("\""))
+                    {
+                        throw new FormatException("Double quote in the middle of a column.");
                     }
                     else
                     {
@@ -136,8 +148,8 @@ namespace HealthyTiger.CSVParser
             }
             else
             {
-                lines.Add(items);
-                items = new List<string>();
+                lines.Add(new List<string>(items));
+                items.Clear();
             }
         }
 
@@ -153,12 +165,18 @@ namespace HealthyTiger.CSVParser
             {
                 ParseLine(s, sepchars, sepstr, ref inQuote, items, lines);
             }
+            if(inQuote)
+            {
+                throw new FormatException("There is no closing quotation mark.");
+            }
             return lines;
         }
 
         public static async Task<List<List<string>>> ParseAsync(Stream stream, char sep, CancellationToken token = default)
         {
-            return await ParseAsync_(LinesFromStreamAsync(stream), sep, token);
+            return await ParseAsync_(LinesFromStreamAsync(stream, token), sep, token);
         }
+
+
     }
 }
