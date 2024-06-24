@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -94,44 +95,48 @@ namespace HealthyTiger.CSVParser
             {
                 if (inQuote)
                 {
-                    var tmp = items[items.Count - 1];
+                    var tmp = items[^1];
                     if (!isLeftMostColumn)
                     {
                         tmp += sepstr;
                     }
-                    var t = col.TrimEnd();
-                    if (t.EndsWith("\""))
+                    if (col.EndsWith("\""))
                     {
-                        if (items.Count == 0)
+                        if (col.Count(c => c == '\"') % 2 == 1)
                         {
-                            throw new FormatException("Unmatched double quotes");
+                            tmp += col.TrimEnd('\"');
+                            inQuote = false;
                         }
-                        tmp += t.Substring(0, t.Length - 1);
-                        inQuote = false;
-                    }
-                    else if(t.Contains("\""))
-                    {
-                        throw new FormatException("Double quote in the middle of a column.");
+                        else
+                        {
+                            tmp += col;
+                        }
                     }
                     else
                     {
                         tmp += col;
                     }
-                    items[items.Count - 1] = tmp;
+
+                    if (items.Count > 0)
+                    {
+                        items[^1] = tmp;
+                    }
+                    else
+                    {
+                        items.Add(tmp);
+                    }
                 }
                 else
                 {
-                    var t = col.TrimStart();
-                    if (t.StartsWith("\""))
+                    if (col.StartsWith("\""))
                     {
-                        var trim = t.TrimEnd();
-                        if (trim.EndsWith("\""))
+                        if (col.EndsWith("\""))
                         {
-                            items.Add(trim.Substring(1, trim.Length - 2));
+                            items.Add(col.Trim('\"'));
                         }
                         else
                         {
-                            items.Add(t.Substring(1));
+                            items.Add(col[1..]);
                             inQuote = true;
                         }
                     }
@@ -144,7 +149,7 @@ namespace HealthyTiger.CSVParser
             }
             if (inQuote)
             {
-                items[items.Count - 1] += "\n";
+                items[^1] += "\n";
             }
             else
             {
@@ -165,7 +170,7 @@ namespace HealthyTiger.CSVParser
             {
                 ParseLine(s, sepchars, sepstr, ref inQuote, items, lines);
             }
-            if(inQuote)
+            if (inQuote)
             {
                 throw new FormatException("There is no closing quotation mark.");
             }
