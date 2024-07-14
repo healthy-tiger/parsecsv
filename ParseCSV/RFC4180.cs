@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HealthyTiger.CSVParser
+namespace HealthyTiger.CSV
 {
-    public class RFC4180
+    public unsafe class RFC4180
     {
-        private void Init(char c)
+        private void Init(char* c)
         {
-            CharType ct = CharTypeTable[c];
+            CharType ct = CharTypeTable[*c];
             switch (ct)
             {
                 case CharType.EOF:
@@ -35,7 +35,7 @@ namespace HealthyTiger.CSVParser
 
                 case CharType.TEXTDATA:
                     CurrentState = NonEscaped;
-                    FieldBuf.Add(c);
+                    FieldAdd(*c);
                     break;
 
                 default:
@@ -43,9 +43,9 @@ namespace HealthyTiger.CSVParser
             }
         }
 
-        private void Escaped(char c)
+        private void Escaped(char* c)
         {
-            CharType ct = CharTypeTable[c];
+            CharType ct = CharTypeTable[*c];
             switch (ct)
             {
                 case CharType.EOF:
@@ -59,7 +59,7 @@ namespace HealthyTiger.CSVParser
                 case CharType.CR:
                 case CharType.LF:
                 case CharType.TEXTDATA:
-                    FieldBuf.Add(c);
+                    FieldAdd(*c);
                     break;
 
                 default:
@@ -67,9 +67,9 @@ namespace HealthyTiger.CSVParser
             }
         }
 
-        private void NonEscaped(char c)
+        private void NonEscaped(char* c)
         {
-            CharType ct = CharTypeTable[c];
+            CharType ct = CharTypeTable[*c];
             switch (ct)
             {
                 case CharType.EOF:
@@ -92,7 +92,7 @@ namespace HealthyTiger.CSVParser
                     break;
 
                 case CharType.TEXTDATA:
-                    FieldBuf.Add(c);
+                    FieldAdd(*c);
                     break;
 
                 default:
@@ -100,9 +100,9 @@ namespace HealthyTiger.CSVParser
             }
         }
 
-        private void EndOfEscaped(char c)
+        private void EndOfEscaped(char* c)
         {
-            CharType ct = CharTypeTable[c];
+            CharType ct = CharTypeTable[*c];
             switch (ct)
             {
                 case CharType.EOF:
@@ -112,7 +112,7 @@ namespace HealthyTiger.CSVParser
                     break;
 
                 case CharType.DQUOTE:
-                    FieldBuf.Add('"');
+                    FieldAdd('"');
                     CurrentState = Escaped;
                     break;
 
@@ -131,9 +131,9 @@ namespace HealthyTiger.CSVParser
             }
         }
 
-        private void EndOfRecord(char c)
+        private void EndOfRecord(char* c)
         {
-            CharType ct = CharTypeTable[c];
+            CharType ct = CharTypeTable[*c];
 
             switch (ct)
             {
@@ -150,17 +150,52 @@ namespace HealthyTiger.CSVParser
             }
         }
 
-        private void EndOfFile(char c) { }
+        private void EndOfFile(char* c) { }
 
-        private readonly List<char> FieldBuf = new List<char>();
+        private const int FIELD_SIZE = 128;
+        private char[] FieldBuf;
+        private int FieldLen;
 
-        private Action<char> CurrentState;
+        private void NewField()
+        {
+            FieldBuf = new char[FIELD_SIZE];
+            FieldLen = 0;
+        }
+
+        private void FieldAdd(char c)
+        {
+            fixed (char* pf = &FieldBuf[0])
+            {
+                *(pf + FieldLen) = c;
+                FieldLen++;
+                if (FieldLen == FieldBuf.Length)
+                {
+                    char[] t = new char[FieldLen + FIELD_SIZE];
+                    fixed (char* pt = &t[0])
+                    {
+                        Buffer.MemoryCopy(pf, pt, FieldLen * sizeof(char), FieldLen * sizeof(char));
+                    }
+                    FieldBuf = t;
+                }
+            }
+        }
+
+        private string FieldValue()
+        {
+            string s = new string(FieldBuf, 0, FieldLen);
+            NewField();
+            return s;
+        }
+
+        private delegate void ParseState(char* p);
+
+        private ParseState CurrentState;
 
         private List<string> Fields = new List<string>();
 
         private List<List<string>> Records_ = new List<List<string>>();
 
-        public List<List<string>> Records {  get => Records_; }
+        public List<List<string>> Records { get => Records_; }
 
         private enum CharType : byte
         {
@@ -177,16 +212,10 @@ namespace HealthyTiger.CSVParser
 
         public RFC4180()
         {
-            Reset();
-            CharTypeTable = CreateDefaultCharTable();
-        }
-
-        public void Reset()
-        {
             CurrentState = this.Init;
-            FieldBuf.Clear();
-            Fields.Clear();
             Records_ = new List<List<string>>();
+            CharTypeTable = CreateDefaultCharTable();
+            NewField();
         }
 
         private static CharType[] CreateDefaultCharTable()
@@ -213,15 +242,26 @@ namespace HealthyTiger.CSVParser
 
         public void Process(char[] src)
         {
-            if (src == null)
+            if (src == null || src.Length == 0)
             {
-                CurrentState('\0');
+                char eof = '\0';
+                CurrentState(&eof);
+                if (!IsEndOfFile)
+                {
+                    throw new FormatException("Incomplete input sequence");
+                }
             }
             else
             {
-                foreach (char c in src)
+                fixed (char* psrc = &src[0])
                 {
-                    CurrentState(c);
+                    char* s = psrc;
+                    char* e = psrc + src.Length;
+                    while (s < e)
+                    {
+                        CurrentState(s);
+                        s++;
+                    }
                 }
             }
         }
@@ -237,17 +277,12 @@ namespace HealthyTiger.CSVParser
             RFC4180 p = new RFC4180();
             p.Process(chars);
             p.Process(null);
-            if(!p.IsEndOfFile)
-            {
-                throw new FormatException("Incomplete input string");
-            }
             return p.Records;
         }
 
         private void OnEndOfField()
         {
-            Fields.Add(new string(FieldBuf.ToArray()));
-            FieldBuf.Clear();
+            Fields.Add(FieldValue());
         }
 
         private void OnEndOfRecord()

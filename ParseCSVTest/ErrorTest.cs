@@ -1,4 +1,4 @@
-﻿using HealthyTiger.CSVParser;
+﻿using HealthyTiger.CSV;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

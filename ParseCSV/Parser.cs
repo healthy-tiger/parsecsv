@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HealthyTiger.CSVParser
+namespace HealthyTiger.CSV
 {
     public class Parser
     {

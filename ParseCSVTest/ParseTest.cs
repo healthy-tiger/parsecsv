@@ -1,6 +1,6 @@
 using System.IO.Pipes;
 using System.Text;
-using HealthyTiger.CSVParser;
+using HealthyTiger.CSV;
 
 namespace ParseCSVTest
 {
