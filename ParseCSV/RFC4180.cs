@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace HealthyTiger.CSV
+namespace HealthyTiger.Data.CSV
 {
     public unsafe class RFC4180
     {
@@ -193,7 +193,7 @@ namespace HealthyTiger.CSV
 
         private List<string> Fields = new List<string>();
 
-        private List<List<string>> Records_ = new List<List<string>>();
+        readonly private List<List<string>> Records_ = new List<List<string>>();
 
         public List<List<string>> Records { get => Records_; }
 

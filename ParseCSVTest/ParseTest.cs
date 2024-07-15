@@ -1,6 +1,6 @@
 using System.IO.Pipes;
 using System.Text;
-using HealthyTiger.CSV;
+using HealthyTiger.Data.CSV;
 
 namespace ParseCSVTest
 {
@@ -35,211 +35,95 @@ namespace ParseCSVTest
             return true;
         }
 
-        [TestMethod]
-        public async Task SingleLineAsync()
-        {
-            string[] src = new string[] {
-                "1,2,3,10,20,30",
-                "1,2,\"(x,y)\",3,4,\"[a,b]\"",
-                "1,2,\"(x,y)\",3,4,\"[a,b]\",5,6",
-                "\"(x,y)\",3,4,\"[a,b]\",5,6",
-                "\"1\",2,3,4",
-                "1,\"2\",3,4",
-                "1,2,3,\"4\"",
-                "1,2,\"\",4",
-            };
-
-            List<List<string>>[] expected = [
-                [["1","2","3","10","20","30"]],
-                [["1","2","(x,y)","3","4","[a,b]"]],
-                [["1","2","(x,y)","3","4","[a,b]","5","6"]],
-                [["(x,y)","3","4","[a,b]","5","6"]],
-                [["1","2","3","4"]],
-                [["1","2","3","4"]],
-                [["1","2","3","4"]],
-                [["1","2","","4"]],
-            ];
-
-            for (int i = 0; i < src.Length; i++)
-            {
-                string s = src[i];
-                List<List<string>> e = expected[i];
-                MemoryStream ms = new(Encoding.UTF8.GetBytes(s));
-                List<List<string>> ans = await Parser.ParseAsync(ms, ',', CancellationToken.None);
-                Assert.AreEqual(CsvEquals(e, ans), true);
-            }
-
-        }
 
         [TestMethod]
-        public async Task MultiLineAsync()
+        public void TestRFC4180_1()
         {
-            string src = string.Join("\r\n", [
-                "1,2,\"(x\r\n,y)\",3,4,\"[\r\na,b]\"",
-                "1,2,\"(x\r\n,y)\",3,4,\"[a,b]\r\n\",5,6",
-                "1,2,\"(x\r\n,y)\",3,4,\"[a,\r\nb]\",5,6",
-                "\"(\r\nx,y)\",3,4,\"[a,b]\",5,6",
-                "\"(\r\nx,y)\",\"3\",4,\"[a,b]\",5,6",
-            ]);
-            List<List<string>> expected =
-            [
-                ["1","2","(x\n,y)","3","4","[\na,b]"],
-                ["1","2","(x\n,y)","3","4","[a,b]\n","5","6"],
-                ["1","2","(x\n,y)","3","4","[a,\nb]","5","6"],
-                ["(\nx,y)","3","4","[a,b]","5","6"],
-                ["(\nx,y)","3","4","[a,b]","5","6"],
-            ];
-            MemoryStream ms = new(Encoding.UTF8.GetBytes(src));
-            List<List<string>> ans = await Parser.ParseAsync(ms, ',', CancellationToken.None);
+            string src = "aaa,bbb,ccc\r\nzzz,yyy,xxx\r\n";
+            List<List<string>> expected = [["aaa","bbb","ccc"],["zzz","yyy","xxx"]];
+
+            List<List<string>> ans = RFC4180.ParseString(src);
             Assert.AreEqual(CsvEquals(expected, ans), true);
         }
 
         [TestMethod]
-        public void SingleLine()
+        public void TestRFC4180_2()
         {
-            string[] src = new string[] {
-                "1,2,3,10,20,30",
-                "1,2,\"(x,y)\",3,4,\"[a,b]\"",
-                "1,2,\"(x,y)\",3,4,\"[a,b]\",5,6",
-                "\"(x,y)\",3,4,\"[a,b]\",5,6",
-                "\"1\",2,3,4",
-                "1,\"2\",3,4",
-                "1,2,3,\"4\"",
-                "1,2,\"\",4",
-            };
+            string src = "aaa,bbb,ccc\r\nzzz,yyy,xxx";
+            List<List<string>> expected = [["aaa", "bbb", "ccc"], ["zzz", "yyy", "xxx"]];
 
-            List<List<string>>[] expected = [
-                [["1","2","3","10","20","30"]],
-                [["1","2","(x,y)","3","4","[a,b]"]],
-                [["1","2","(x,y)","3","4","[a,b]","5","6"]],
-                [["(x,y)","3","4","[a,b]","5","6"]],
-                [["1","2","3","4"]],
-                [["1","2","3","4"]],
-                [["1","2","3","4"]],
-                [["1","2","","4"]],
-            ];
-
-            for (int i = 0; i < src.Length; i++)
-            {
-                string s = src[i];
-                List<List<string>> e = expected[i];
-                List<List<string>> ans = RFC4180.ParseString(s);
-                Assert.AreEqual(CsvEquals(e, ans), true);
-            }
-        }
-
-        [TestMethod]
-        public void MultiLine()
-        {
-            string src = string.Join("\r\n", [
-                "1,2,\"(x\r\n,y)\",3,4,\"[\r\na,b]\"",
-                "1,2,\"(x\r\n,y)\",3,4,\"[a,b]\r\n\",5,6",
-                "1,2,\"(x\r\n,y)\",3,4,\"[a,\r\nb]\",5,6",
-                "\"(\r\nx,y)\",3,4,\"[a,b]\",5,6",
-                "\"(\r\nx,y)\",\"3\",4,\"[a,b]\",5,6",
-            ]);
-            // TODO ññîˆÇ…â¸çsÇ™Ç†ÇÈèÍçáÇ∆Ç»Ç¢èÍçá
-            List<List<string>> expected =
-            [
-                ["1","2","(x\n,y)","3","4","[\na,b]"],
-                ["1","2","(x\n,y)","3","4","[a,b]\n","5","6"],
-                ["1","2","(x\n,y)","3","4","[a,\nb]","5","6"],
-                ["(\nx,y)","3","4","[a,b]","5","6"],
-                ["(\nx,y)","3","4","[a,b]","5","6"],
-            ];
-            MemoryStream ms = new(Encoding.UTF8.GetBytes(src));
-            List<List<string>> ans = Parser.Parse(ms, ',');
+            List<List<string>> ans = RFC4180.ParseString(src);
             Assert.AreEqual(CsvEquals(expected, ans), true);
         }
 
         [TestMethod]
-        public void SingleLineString()
+        public void TestRFC4180_3()
         {
-            string[] src = new string[] {
-                "1,2,3,10,20,30",
-                "1,2,\"(x,y)\",3,4,\"[a,b]\"",
-                "1,2,\"(x,y)\",3,4,\"[a,b]\",5,6",
-                "\"(x,y)\",3,4,\"[a,b]\",5,6",
-                "\"1\",2,3,4",
-                "1,\"2\",3,4",
-                "1,2,3,\"4\"",
-                "1,2,\"\",4",
-            };
+            string src = "aaa,bbb,ccc\r\n";
+            List<List<string>> expected = [["aaa","bbb","ccc"]];
 
-            List<List<string>>[] expected = [
-                [["1","2","3","10","20","30"]],
-                [["1","2","(x,y)","3","4","[a,b]"]],
-                [["1","2","(x,y)","3","4","[a,b]","5","6"]],
-                [["(x,y)","3","4","[a,b]","5","6"]],
-                [["1","2","3","4"]],
-                [["1","2","3","4"]],
-                [["1","2","3","4"]],
-                [["1","2","","4"]],
-            ];
-
-            for (int i = 0; i < src.Length; i++)
-            {
-                string s = src[i];
-                List<List<string>> e = expected[i];
-                List<List<string>> ans = Parser.Parse(s, ',');
-                Assert.AreEqual(CsvEquals(e, ans), true);
-            }
-        }
-
-        [TestMethod]
-        public void MultiLineString()
-        {
-            string src = string.Join("\r\n", [
-                "1,2,\"(x\r\n,y)\",3,4,\"[\r\na,b]\"",
-                "1,2,\"(x\r\n,y)\",3,4,\"[a,b]\r\n\",5,6",
-                "1,2,\"(x\r\n,y)\",3,4,\"[a,\r\nb]\",5,6",
-                "\"(\r\nx,y)\",3,4,\"[a,b]\",5,6",
-                "\"(\r\nx,y)\",\"3\",4,\"[a,b]\",5,6",
-            ]);
-            List<List<string>> expected =
-            [
-                ["1","2","(x\n,y)","3","4","[\na,b]"],
-                ["1","2","(x\n,y)","3","4","[a,b]\n","5","6"],
-                ["1","2","(x\n,y)","3","4","[a,\nb]","5","6"],
-                ["(\nx,y)","3","4","[a,b]","5","6"],
-                ["(\nx,y)","3","4","[a,b]","5","6"],
-            ];
-            List<List<string>> ans = Parser.Parse(src, ',');
+            List<List<string>> ans = RFC4180.ParseString(src);
             Assert.AreEqual(CsvEquals(expected, ans), true);
         }
 
         [TestMethod]
-        public async Task CancelStreamAsync()
+        public void TestRFC4180_4()
         {
-            using AnonymousPipeServerStream server = new(direction: PipeDirection.Out);
-            using AnonymousPipeClientStream client = new(PipeDirection.In, server.GetClientHandleAsString());
-            CancellationTokenSource cts = new();
+            string src = "aaa,bbb,ccc";
+            List<List<string>> expected = [["aaa","bbb","ccc"]];
 
-            Task writer = Task.Run(() =>
-            {
-                Thread.Sleep(100);
-                using StreamWriter sw = new(server);
-                for (int i = 0; i < 10; i++)
-                {
-                    sw.WriteLine($"{i},1,2,3");
-                }
-                cts.Cancel();
-            });
+            List<List<string>> ans = RFC4180.ParseString(src);
+            Assert.AreEqual(CsvEquals(expected, ans), true);
+        }
 
-            bool isCanceled = false;
-            List<List<string>>? lines = null;
-            try
-            {
-                lines = await Parser.ParseAsync(client, ',', cts.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                isCanceled = true;
-            }
+        [TestMethod]
+        public void TestRFC4180_5()
+        {
+            string src = "\"aaa\",\"bbb\",\"ccc\"\r\nzzz,yyy,xxx";
+            List<List<string>> expected = [["aaa","bbb","ccc"],["zzz","yyy","xxx"]];
 
-            await writer;
+            List<List<string>> ans = RFC4180.ParseString(src);
+            Assert.AreEqual(CsvEquals(expected, ans), true);
+        }
 
-            Assert.AreEqual(true, isCanceled);
+        [TestMethod]
+        public void TestRFC4180_6()
+        {
+            string src = "\"aaa\",\"b\r\nbb\",\"ccc\"\r\nzzz,yyy,xxx";
+            List<List<string>> expected = [["aaa","b\r\nbb","ccc"],["zzz","yyy","xxx"]];
+
+            List<List<string>> ans = RFC4180.ParseString(src);
+            Assert.AreEqual(CsvEquals(expected, ans), true);
+        }
+
+        [TestMethod]
+        public void TestRFC4180_7()
+        {
+            string src = "\"aaa\",\"b\"\"bb\",\"ccc\"";
+            List<List<string>> expected = [["aaa","b\"bb","ccc"]];
+
+            List<List<string>> ans = RFC4180.ParseString(src);
+            Assert.AreEqual(CsvEquals(expected, ans), true);
+        }
+
+        [TestMethod]
+        public void TestRFC4180_8()
+        {
+            string src = "zzz,yyy,xxx\r\n\"aaa\",\"bbb\",\"ccc\"\r\n";
+            List<List<string>> expected = [["zzz", "yyy", "xxx"],["aaa","bbb","ccc"]];
+
+            List<List<string>> ans = RFC4180.ParseString(src);
+            Assert.AreEqual(CsvEquals(expected, ans), true);
+        }
+
+        [TestMethod]
+        public void TestRFC4180_9()
+        {
+            string src = "zzz,yyy,xxx\r\n\"aaa\",\"bbb\",\"ccc\"";
+            List<List<string>> expected = [["zzz", "yyy", "xxx"],["aaa","bbb","ccc"]];
+
+            List<List<string>> ans = RFC4180.ParseString(src);
+            Assert.AreEqual(CsvEquals(expected, ans), true);
         }
     }
 }
